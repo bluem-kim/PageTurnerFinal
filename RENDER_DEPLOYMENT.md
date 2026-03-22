@@ -62,11 +62,11 @@ Your app needs special keys to talk to the Database and Firebase. In Render, go 
 
 ## 🔗 Step 5: Connect Your Phone App
 
-Once your backend is live, Render will give you a link like `https://pageturner-backend.onrender.com`.
+Once your backend is live, Render will give you a link like `https://pageturner-backend-o1h8.onrender.com`.
 
 1.  Go to your **Frontend** code.
-2.  Find the file where you set the API URL (usually `assets/common/baseurl.js`).
-3.  Change the URL to: `https://pageturner-backend.onrender.com/api/v1/`
+2.  Find the file where you set the API URL (usually `frontend/.env`).
+3.  Change the URL to: `https://pageturner-backend-o1h8.onrender.com/api/v1/`
 
 ---
 
