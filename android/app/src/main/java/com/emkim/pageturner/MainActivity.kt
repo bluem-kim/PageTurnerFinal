@@ -1,4 +1,4 @@
-package com.pageturner
+package com.emkim.pageturner
 
 import android.os.Build
 import android.os.Bundle
