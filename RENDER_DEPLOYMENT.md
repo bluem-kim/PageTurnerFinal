@@ -4,7 +4,7 @@ This guide explains how to put your **Backend** on the internet using a service 
 
 ---
 
-## 🏗️ Step 1: Tell Render About Your Code
+## 🏗️ Step 1: Tell Render About Your Code   
 
 1.  **Push to GitHub**: Make sure all your latest code is on GitHub (we already did this!).
 2.  **Go to Render**: Log in to [dashboard.render.com](https://dashboard.render.com).
@@ -25,7 +25,7 @@ When Render asks for details, use these exactly:
 -   **Build Command**: `npm install`
 -   **Start Command**: `npm start`
 
----
+--- 
 
 ## 🔑 Step 3: Add Your "Secret Recipes" (Environment Variables)
 
@@ -43,6 +43,10 @@ Your app needs special keys to talk to the Database and Firebase. In Render, go 
 -   `CLOUDINARY_CLOUD_NAME`: Your Cloudinary name.
 -   `CLOUDINARY_API_KEY`: Your Cloudinary key.
 -   `CLOUDINARY_API_SECRET`: Your Cloudinary secret.
+
+- **`GLIBC_2.38` not found error**: 
+  - This happens if Render uses a Node.js version that is too new for their current system (like Node 22). 
+  - **Fix**: In your `backend/package.json`, I've added an `engines` field to force Render to use **Node 20 (LTS)**. This should fix the issue with `sqlite3`.
 
 ---
 
