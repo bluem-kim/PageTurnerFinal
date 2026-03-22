@@ -1,11 +1,14 @@
 {
-  "dependencies": {
-    "@react-native-community/slider": "^5.1.2",
-    "expo": "~55.0.6",
-    "react": "19.2.0",
-    "react-native": "0.83.2"
-  },
-  "name": "pageturner",
+  "name": "pageturner-monorepo",
   "version": "1.0.0",
-  "scripts": {}
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "build:frontend": "cd frontend && npx eas build"
+  }
 }
