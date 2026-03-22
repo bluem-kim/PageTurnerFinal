@@ -45,8 +45,10 @@ Your app needs special keys to talk to the Database and Firebase. In Render, go 
 -   `CLOUDINARY_API_SECRET`: Your Cloudinary secret.
 
 - **`GLIBC_2.38` not found error**: 
-  - This happens if Render uses a Node.js version that is too new for their current system (like Node 22). 
-  - **Fix**: In your `backend/package.json`, I've added an `engines` field to force Render to use **Node 20 (LTS)**. This should fix the issue with `sqlite3`.
+  - This happens if Render uses a Node.js version that is too new for their current system (like Node 22) or if a package version (like `sqlite3` v6) requires a newer system library than Render provides.
+  - **Fix**: 
+    1. I've added an `engines` field in `backend/package.json` to force **Node 20 (LTS)**.
+    2. I've downgraded `sqlite3` to **`^5.1.7`** for better compatibility with Render's Linux environment.
 
 ---
 
