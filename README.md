@@ -36,8 +36,9 @@ npx expo start
 
 ## 🌐 Deployment
 
-For instructions on how to deploy the backend to **Render**, please refer to:
-👉 [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)
+For instructions on how to deploy:
+- **Backend (Render)**: 👉 [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)
+- **Frontend (Expo/EAS)**: 👉 [FRONTEND_DEPLOYMENT.md](FRONTEND_DEPLOYMENT.md)
 
 ---
 
