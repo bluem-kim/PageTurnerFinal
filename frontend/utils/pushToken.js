@@ -44,9 +44,17 @@ export const registerDevicePushToken = async (passedToken) => {
     // because we're using Firebase Admin directly in the backend now.
     let token = "";
     if (Platform.OS === "android") {
-      const deviceTokenData = await Notifications.getDevicePushTokenAsync();
-      token = deviceTokenData.data;
-      console.log("[Push] Android Device Token (FCM) generated:", token);
+      try {
+        const deviceTokenData = await Notifications.getDevicePushTokenAsync();
+        token = deviceTokenData.data;
+        console.log("[Push] Android Device Token (FCM) generated successfully:", token);
+      } catch (tokenErr) {
+        console.error("[Push] Failed to get Android device token:", tokenErr.message);
+        // Fallback to Expo token if FCM fails
+        const expoTokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+        token = expoTokenData.data;
+        console.log("[Push] Fallback to Expo Token:", token);
+      }
     } else {
       const expoTokenData = await Notifications.getExpoPushTokenAsync({
         projectId: projectId,

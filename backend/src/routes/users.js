@@ -318,7 +318,10 @@ router.post("/push-token", auth, async (req, res) => {
   const token = String(req.body?.token || "").trim();
   const platform = String(req.body?.platform || "unknown").trim() || "unknown";
 
+  console.log(`[User] Received push token request from ${req.user.userId}. Platform: ${platform}`);
+
   if (!token) {
+    console.error("[User] Push token registration failed: Token is empty");
     return res.status(400).json({ message: "Push token is required" });
   }
 

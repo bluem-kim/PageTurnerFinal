@@ -345,19 +345,22 @@ const MyReviews = ({ navigation }) => {
   }, [error]);
 
   const handleEdit = (item) => {
-    navigation.navigate("Review Product", {
-      orderId: item.review?.order,
-      product: {
-        id: item.productId,
-        name: item.productName,
-        image: item.productImage,
-        reviews: [{
-          user: item.review?.user,
-          rating: item.review?.rating,
-          comment: item.review?.comment,
-          images: item.review?.images || [],
-          order: item.review?.order,
-        }],
+    navigation.navigate("Profile", {
+      screen: "Review Product",
+      params: {
+        orderId: item.review?.order,
+        product: {
+          id: item.productId,
+          name: item.productName,
+          image: item.productImage,
+          reviews: [{
+            user: item.review?.user,
+            rating: item.review?.rating,
+            comment: item.review?.comment,
+            images: item.review?.images || [],
+            order: item.review?.order,
+          }],
+        },
       },
     });
   };

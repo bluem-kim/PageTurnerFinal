@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "668291094160-l2vun5m28je2su2gub0juub6krperq5h.apps.googleusercontent.com",
+          "client_id": "668291094160-ttvd213i9309c37n4kgnooe1cbg97qvc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.maria.pageturnerapp",
-            "certificate_hash": "828d06b7b2c3d1adf5d7d6383ad4643da32fe9f8"
+            "certificate_hash": "c9bae6356c001681d02ea3b19ab5033697e97585"
           }
         },
         {

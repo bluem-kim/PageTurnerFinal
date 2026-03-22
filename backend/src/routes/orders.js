@@ -49,6 +49,7 @@ router.get("/", auth, async (req, res) => {
 });
 
 router.post("/", auth, async (req, res) => {
+  console.log(`[Order] NEW ORDER REQUEST RECEIVED from user ${req.user.userId}`);
   const purchaseCounters = {};
 
   const orderItemsIds = await Promise.all(
@@ -139,12 +140,25 @@ router.post("/", auth, async (req, res) => {
   // Send Order Placed push notification
   if (populatedOrder.user) {
     const { sendPushNotificationToUser } = require("../utils/pushNotifications");
+    console.log(`[Order] Attempting to send push notification to user: ${populatedOrder.user.email}`);
+    
+    // VERIFY TOKENS EXIST
+    if (!populatedOrder.user.pushTokens || populatedOrder.user.pushTokens.length === 0) {
+      console.warn(`[Order] User ${populatedOrder.user.email} has NO push tokens in database!`);
+    } else {
+      console.log(`[Order] User ${populatedOrder.user.email} has ${populatedOrder.user.pushTokens.length} tokens.`);
+    }
+
     sendPushNotificationToUser(
       populatedOrder.user,
       "Order Placed successfully!",
       `Your order #${String(populatedOrder.id).slice(-8).toUpperCase()} has been received and is being processed.`,
       { type: "order", orderId: populatedOrder.id }
-    ).catch(err => console.error("[Order] Push Notification Error:", err.message));
+    )
+    .then(res => console.log(`[Order] Push notification result for ${populatedOrder.user.email}:`, JSON.stringify(res)))
+    .catch(err => console.error(`[Order] Push notification CRITICAL error for ${populatedOrder.user.email}:`, err.message));
+  } else {
+    console.warn("[Order] No user found for order, skipping push notification.");
   }
 
   // If a coupon was used, record it in the Promotion's usedBy array
@@ -225,13 +239,17 @@ router.put("/:id", auth, adminOnly, async (req, res) => {
     sendOrderEmail(updated.user, updated, statusLabel);
     
     // Send push notification
-    console.log(`[Route] Triggering push notification for order ${updated.id} status update`);
+    console.log(`[Route] Triggering push notification for order ${updated.id} status update to ${statusLabel} for user ${updated.user.email}`);
     sendPushNotificationToUser(
       updated.user,
       "Order Status Updated",
       `Your order #${String(updated.id).slice(-8).toUpperCase()} is now ${statusLabel}.`,
       { type: "order", orderId: updated.id }
-    ).catch(err => console.error("[Route] Order Status Push Error:", err.message));
+    )
+    .then(res => console.log(`[Route] Status update push result for ${updated.user.email}:`, res))
+    .catch(err => console.error(`[Route] Status update push error for ${updated.user.email}:`, err.message));
+  } else {
+    console.warn(`[Route] No user found for order ${updated.id}, skipping status update push.`);
   }
 
   return res.json(updated);
@@ -300,12 +318,17 @@ router.post("/:id/handle-cancel-request", auth, adminOnly, async (req, res) => {
     const statusLabel = action === "approve" ? "Cancellation Approved" : "Cancellation Disapproved";
     sendOrderEmail(order.user, order, statusLabel);
     
+    console.log(`[CancelRequest] Sending push notification for cancellation ${action} to ${order.user.email}`);
     sendPushNotificationToUser(
       order.user,
       "Order Update",
       `Your cancellation request for order #${String(order.id).slice(-8).toUpperCase()} was ${action}d.`,
       { type: "order", orderId: order.id }
-    ).catch(() => null);
+    )
+    .then(res => console.log(`[CancelRequest] Push result for ${order.user.email}:`, res))
+    .catch(err => console.error(`[CancelRequest] Push error for ${order.user.email}:`, err.message));
+  } else {
+    console.warn(`[CancelRequest] No user found for order ${order.id}, skipping push.`);
   }
 
   return res.json({ message: `Cancellation request ${action}d`, order });
@@ -348,12 +371,17 @@ router.post("/:id/confirm-delivered", auth, async (req, res) => {
   if (order.user) {
     sendOrderEmail(order.user, order, "Delivered");
     
+    console.log(`[ConfirmDelivered] Sending push notification to ${order.user.email}`);
     sendPushNotificationToUser(
       order.user,
       "Order Delivered",
       `Your order #${String(order.id).slice(-8).toUpperCase()} has been successfully delivered.`,
       { type: "order", orderId: order.id }
-    ).catch(() => null);
+    )
+    .then(res => console.log(`[ConfirmDelivered] Push result for ${order.user.email}:`, res))
+    .catch(err => console.error(`[ConfirmDelivered] Push error for ${order.user.email}:`, err.message));
+  } else {
+    console.warn(`[ConfirmDelivered] No user found for order ${order.id}, skipping push.`);
   }
 
   return res.json(order);

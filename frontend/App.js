@@ -7,15 +7,27 @@ import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { Platform } from "react-native";
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true, // Legacy support
-    shouldShowBanner: true, // New API
-    shouldShowList: true, // New API
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
 });
+
+// Configure Android Channel
+if (Platform.OS === "android") {
+  Notifications.setNotificationChannelAsync("default", {
+    name: "default",
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: "#FF231F7C",
+  });
+}
 
 import Main from "./Navigators/Main";
 import Auth from "./Context/Store/Auth";
@@ -42,6 +54,48 @@ const AppContent = () => {
   }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
+    // Handle notification that opened the app
+    Notifications.getLastNotificationResponseAsync().then(response => {
+      if (response) {
+        handleNotificationResponse(response);
+      }
+    });
+
+    const handleNotificationResponse = response => {
+      const data = response.notification.request.content.data;
+      const { promotionId, orderId, type } = data;
+      console.log("[Push] Handling Notification Response:", data);
+
+      setTimeout(() => {
+        if (!navigationRef.isReady()) {
+          console.log("[Push] Navigation not ready yet...");
+          return;
+        }
+
+        if (type === "promotion" && promotionId) {
+          const isAdmin = auth?.stateUser?.userProfile?.isAdmin;
+          if (isAdmin) {
+            navigationRef.navigate("Promotion Detail", { promotionId });
+          } else {
+            navigationRef.navigate("Shop", {
+              screen: "Promotion Detail",
+              params: { promotionId }
+            });
+          }
+        } else if (type === "order") {
+          const isAdmin = auth?.stateUser?.userProfile?.isAdmin;
+          if (isAdmin) {
+            navigationRef.navigate("Orders");
+          } else {
+            navigationRef.navigate("Profile", {
+              screen: "Order Detail",
+              params: { orderId }
+            });
+          }
+        }
+      }, 1000);
+    };
+
     // Handle incoming notifications (Foreground)
     const receivedSubscription = Notifications.addNotificationReceivedListener(async notification => {
       const { title, body, data } = notification.request.content;
@@ -98,47 +152,8 @@ const AppContent = () => {
       }
     });
 
-    // Handle notification clicks
-    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      // In FCM direct push, the data might be at a different level than standard Expo
-      const data = response.notification.request.content.data;
-      const { promotionId, orderId, type } = data;
-      
-      console.log("[Push] Notification clicked. Data:", data);
-      
-      setTimeout(() => {
-        if (!navigationRef.isReady()) {
-          console.log("[Push] Navigation not ready yet...");
-          return;
-        }
-
-        if (type === "promotion" && promotionId) {
-          console.log("[Push] Navigating to Promotion:", promotionId);
-          const isAdmin = auth?.stateUser?.userProfile?.isAdmin;
-          if (isAdmin) {
-            navigationRef.navigate("Promotion Detail", { promotionId });
-          } else {
-            navigationRef.navigate("Shop", {
-              screen: "Promotion Detail",
-              params: { promotionId }
-            });
-          }
-        } else if (type === "order") {
-          console.log("[Push] Navigating to Order Details:", orderId);
-          const isAdmin = auth?.stateUser?.userProfile?.isAdmin;
-          if (isAdmin) {
-            // Admins go to the main Orders list (or you could create AdminOrderDetail)
-            navigationRef.navigate("Orders");
-          } else {
-            // Regular users go to the new OrderDetail screen
-            navigationRef.navigate("Profile", {
-              screen: "Order Detail",
-              params: { orderId }
-            });
-          }
-        }
-      }, 500);
-    });
+    // Handle notification clicks while app is open
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
 
     return () => {
       receivedSubscription.remove();

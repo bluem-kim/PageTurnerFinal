@@ -140,7 +140,7 @@ const OrderItemRow = ({ orderItem, orderId, navigation }) => {
       <TouchableOpacity
         style={ir.reviewBtn}
         activeOpacity={0.82}
-        onPress={() => navigation.navigate("Review Product", { product, orderId })}
+        onPress={() => navigation.navigate("Profile", { screen: "Review Product", params: { product, orderId } })}
       >
         <Ionicons name="pencil" size={12} color={C.primary} />
         <Text style={ir.reviewBtnTxt}>Review</Text>

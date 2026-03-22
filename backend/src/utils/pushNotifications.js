@@ -5,15 +5,33 @@ const path = require("path");
 
 const expo = new Expo();
 
+console.log("[Push] Initializing Push Notifications Utility...");
+
 // Initialize Firebase Admin for Android Direct Push
 try {
-  const serviceAccount = require("./firebase-service-account.json");
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  console.log("[Push] Firebase Admin initialized for Android.");
+  let serviceAccount;
+  
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log("[Push] Found FIREBASE_SERVICE_ACCOUNT environment variable.");
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    const serviceAccountPath = path.resolve(__dirname, "firebase-service-account.json");
+    console.log(`[Push] Looking for service account file at: ${serviceAccountPath}`);
+    serviceAccount = require(serviceAccountPath);
+  }
+  
+  if (admin.apps.length === 0) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    console.log("[Push] Firebase Admin initialized successfully for Android.");
+  } else {
+    console.log("[Push] Firebase Admin already initialized.");
+  }
 } catch (error) {
-  console.error("[Push] Firebase initialization failed:", error.message);
+  console.error("[Push] CRITICAL: Firebase initialization failed.");
+  console.error("[Push] Error Detail:", error.message);
+  console.warn("[Push] To fix for Render: Add FIREBASE_SERVICE_ACCOUNT as an environment variable with the JSON content.");
 }
 
 /**
@@ -81,10 +99,20 @@ const sendPushNotificationToAll = async (title, body, data = {}) => {
  * Sends a push notification to a specific user.
  */
 const sendPushNotificationToUser = async (user, title, body, data = {}) => {
-  if (!user || !user.pushTokens || !user.pushTokens.length) return [];
+  if (!user) {
+    console.warn("[Push] Cannot send notification: User is null");
+    return { success: false, reason: "user_null" };
+  }
+  
+  if (!user.pushTokens || !user.pushTokens.length) {
+    console.warn(`[Push] User ${user.email} has no registered push tokens.`);
+    return { success: false, reason: "no_tokens" };
+  }
 
   const expoMessages = [];
   const firebaseTokens = [];
+
+  console.log(`[Push] Sending to ${user.email} (${user.pushTokens.length} tokens)`);
 
   for (const pushToken of user.pushTokens) {
     if (pushToken.platform === "android") {
@@ -102,29 +130,39 @@ const sendPushNotificationToUser = async (user, title, body, data = {}) => {
 
   // Send via Firebase
   if (firebaseTokens.length > 0) {
-    const payload = {
+    const messagePayload = {
       notification: { title, body },
       data: Object.keys(data).reduce((acc, key) => {
         acc[key] = String(data[key]);
         return acc;
       }, {}),
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "default",
+          sound: "default",
+          priority: "high",
+        },
+      },
     };
     try {
-      await admin.messaging().sendEachForMulticast({
+      const response = await admin.messaging().sendEachForMulticast({
         tokens: firebaseTokens,
-        ...payload,
+        ...messagePayload,
       });
+      console.log(`[Push] Firebase response for ${user.email}: ${response.successCount} success, ${response.failureCount} failure.`);
     } catch (error) {
-      console.error("[Push] Firebase error for user:", error.message);
+      console.error(`[Push] Firebase error for user ${user.email}:`, error.message);
     }
   }
 
   // Send via Expo
   if (expoMessages.length > 0) {
     try {
-      await expo.sendPushNotificationsAsync(expoMessages);
+      const tickets = await expo.sendPushNotificationsAsync(expoMessages);
+      console.log(`[Push] Expo response for ${user.email}:`, tickets);
     } catch (error) {
-      console.error("[Push] Expo error for user:", error.message);
+      console.error(`[Push] Expo error for user ${user.email}:`, error.message);
     }
   }
 
