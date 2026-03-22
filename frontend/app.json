@@ -1,9 +1,9 @@
 {
   "expo": {
     "owner": "emkim",
-    "name": "pageturnerr",
-    "slug": "pageturnerr",
-    "scheme": "pageturnerr",
+    "name": "pageturner",
+    "slug": "pageturner",
+    "scheme": "pageturner",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

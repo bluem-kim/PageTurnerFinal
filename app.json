@@ -1,4 +1,6 @@
 {
+  "name": "pageturner",
+  "slug": "pageturner",
   "android": {
     "package": "com.maria.pageturnerapp"
   },
