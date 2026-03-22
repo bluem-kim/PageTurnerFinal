@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "668291094160-uksuibriqc79kr0itcqa0ap30lvr6ptk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.maria.pageturnerapp",
+            "certificate_hash": "e5f31f9c86dabeac7831428edbb42d763f1d1487"
+          }
+        },
+        {
           "client_id": "668291094160-hf0jdjhr9m9a3js75lvur4605qud4tgn.apps.googleusercontent.com",
           "client_type": 3
         }

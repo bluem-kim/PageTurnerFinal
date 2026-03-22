@@ -28,8 +28,8 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="pageturnerr"/>
-        <data android:scheme="exp+pageturnerr"/>
+        <data android:scheme="pageturner"/>
+        <data android:scheme="exp+pageturner"/>
       </intent-filter>
     </activity>
   </application>
